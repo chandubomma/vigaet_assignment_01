@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id              Int                  @id @default(autoincrement()) 
+  username        String
+  email           String               @unique
+  password        String
+  MeetingRequests MeetingRequest[]     @relation("UserMeetingRequests")
+  GuideRequests   MeetingRequest[]     @relation("GuideMeetingRequests")
+  Meetings        Meeting[]            @relation("UserMeetings")
+  participants    MeetingParticipant[]
+}
+
+
+model MeetingRequest {
+  id            Int           @id @default(autoincrement()) 
+  userId        Int
+  guideId       Int
+  user          User          @relation("UserMeetingRequests", fields: [userId], references: [id])
+  guide         User          @relation("GuideMeetingRequests", fields: [guideId], references: [id])
+  preferredTime DateTime?
+  requestedAt   DateTime      @default(now())
+  status        RequestStatus @default(PENDING)
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model Meeting {
+  id           Int                  @id @default(autoincrement()) 
+  hostId       Int
+  host         User                 @relation("UserMeetings", fields: [hostId], references: [id])
+  startedAt    DateTime?
+  endedAt      DateTime?
+  scheduledAt  DateTime?
+  status       MeetingStatus        @default(TO_BE_HAPPEN)
+  participants MeetingParticipant[]
+}
+
+model MeetingParticipant {
+  id        Int        @id @default(autoincrement()) 
+  meetingId Int
+  meeting   Meeting    @relation(fields: [meetingId], references: [id])
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  joinedAt  DateTime?  
+  leftAt    DateTime?
+}
+
+enum MeetingStatus {
+  COMPLETED
+  TO_BE_HAPPEN
+  CANCELLED
+}
+
