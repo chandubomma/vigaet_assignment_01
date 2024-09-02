@@ -13,21 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id              Int                  @id @default(autoincrement()) 
+  id              Int                  @id @default(autoincrement())
   username        String
   email           String               @unique
   password        String
+  joinedAt        DateTime             @default(now())
   MeetingRequests MeetingRequest[]     @relation("UserMeetingRequests")
   GuideRequests   MeetingRequest[]     @relation("GuideMeetingRequests")
   Meetings        Meeting[]            @relation("UserMeetings")
   participants    MeetingParticipant[]
 }
 
-
 model MeetingRequest {
-  id            Int           @id @default(autoincrement()) 
+  id            Int           @id @default(autoincrement())
   userId        Int
   guideId       Int
   user          User          @relation("UserMeetingRequests", fields: [userId], references: [id])
@@ -45,7 +44,7 @@ enum RequestStatus {
 }
 
 model Meeting {
-  id           Int                  @id @default(autoincrement()) 
+  id           Int                  @id @default(autoincrement())
   hostId       Int
   host         User                 @relation("UserMeetings", fields: [hostId], references: [id])
   startedAt    DateTime?
@@ -56,12 +55,12 @@ model Meeting {
 }
 
 model MeetingParticipant {
-  id        Int        @id @default(autoincrement()) 
+  id        Int       @id @default(autoincrement())
   meetingId Int
-  meeting   Meeting    @relation(fields: [meetingId], references: [id])
+  meeting   Meeting   @relation(fields: [meetingId], references: [id])
   userId    Int
-  user      User       @relation(fields: [userId], references: [id])
-  joinedAt  DateTime?  
+  user      User      @relation(fields: [userId], references: [id])
+  joinedAt  DateTime?
   leftAt    DateTime?
 }
 
@@ -70,4 +69,3 @@ enum MeetingStatus {
   TO_BE_HAPPEN
   CANCELLED
 }
-
